@@ -57,4 +57,40 @@ with torch.inference_mode():
     print(y_pred)
 
 # call plot_data with the computed prediction (was previously plot_data(y_pred))
-plot_data(X_train, Y_train, X_test, Y_test, Prediction=y_pred)
+# plot_data(X_train, Y_train, X_test, Y_test, Prediction=y_pred)
+
+# Building training and testing loop
+loss = nn.L1Loss() # MAE
+optimizer = optim.SGD(model.parameters(), lr=0.01) # Stochastic Gradient Descent
+
+epoch_count = []
+loss_train_values = []  
+loss_test_values = []
+
+epoch = 335
+for epoch in range(epoch):
+    model.train() # put the model into training mode
+    y_pred = model(X_train) 
+    loss_train = loss(y_pred, Y_train) # compute the loss
+    optimizer.zero_grad() # zero the gradients
+    loss_train.backward() # backpropagation
+    optimizer.step() # update the parameters
+
+    #Testing loop
+    model.eval() # put the model into evaluation mode
+    with torch.inference_mode():
+        test_pred = model(X_test)
+        loss_test = loss(test_pred, Y_test)
+
+    if epoch % 10 == 0:
+     epoch_count.append(epoch)
+     loss_train_values.append(loss_train)
+     loss_test_values.append(loss_test)
+     print(f"Epochs: {epoch}| Loss:  {loss_train}| Test Loss: {loss_test}")
+
+  #  Print out model state_dict
+    print(model.state_dict())
+# Plotting loss curves
+# plt.plot(epoch_count, loss_train_values, label="Train Loss")
+y_preds = model(X_test)
+plot_data(X_train, Y_train, X_test, Y_test, Prediction=y_preds)
